@@ -153,7 +153,7 @@ const SendverifyOtp = async (req, res) => {
 
     //? Otp generation
 
-    const otp = crypto.randomInt(100000, 999999).toString();
+    const otp = crypto.randomInt(100000, 999999);
     user.verifyOtp = otp;
     user.verifyOtpExpriesAt = Date.now() + 24 * 60 * 60 * 1000;
 
@@ -188,7 +188,7 @@ const SendverifyOtp = async (req, res) => {
 
     return res.json({
       success: true,
-      message: 'Otp send succesfully',
+      message: 'Otp sent succesfully',
     });
   } catch (error) {
     console.error(error.message);
@@ -217,7 +217,7 @@ const verifyOtp = async (req, res) => {
     if (!user) {
       return res.json({
         success: false,
-        message: 'User doesnt exist in db',
+        message: 'User not found',
       });
     }
 
@@ -332,4 +332,121 @@ const verifyOtp = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser, SendverifyOtp, verifyOtp };
+const sendResetOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.json({
+        message: 'User not found in the database.',
+      });
+    }
+
+    const otp = crypto.randomInt(100000, 999999);
+    user.resetOtp = otp;
+    user.resetOtpExpiresAt = Date.now() + 15 * 60 * 1000;
+
+    await user.save();
+
+    const mailOptions = {
+      from: process.env.EMAIL, // Replace with your app's support email
+      to: email, // Recipient's email
+      subject: `Reset Your Password - ${otp}`, // Email subject
+      html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eaeaea; border-radius: 8px; background-color: #ffffff;">
+        <div style="text-align: center; padding: 10px;">
+          <h1 style="color: #4CAF50; margin-bottom: 0;">Pawlaya</h1>
+          <p style="color: #888888; font-size: 14px;">Secure Your Account</p>
+        </div>
+        <div style="padding: 20px;">
+          <p style="font-size: 16px; color: #333333;">Hi there,</p>
+          <p style="font-size: 14px; color: #555555; line-height: 1.5;">
+            We received a request to reset the password for your account. Use the OTP below to proceed with resetting your password:
+          </p>
+          <div style="text-align: center; margin: 20px 0;">
+            <h2 style="color: #4CAF50; font-size: 32px; margin: 0;">${otp}</h2>
+          </div>
+          <p style="font-size: 14px; color: #555555; line-height: 1.5;">
+            This OTP is valid for <strong>15 minutes</strong>. If you did not request this, you can safely ignore this email.
+          </p>
+          <p style="font-size: 14px; color: #555555;">Need help? <a href="mailto:support@yourapp.com" style="color: #4CAF50; text-decoration: none;">Contact Support</a></p>
+        </div>
+        <div style="text-align: center; padding: 10px; background-color: #f9f9f9; border-top: 1px solid #eaeaea; border-radius: 0 0 8px 8px;">
+          <p style="font-size: 12px; color: #aaaaaa;">You received this email because a password reset request was made for your account.</p>
+          <p style="font-size: 12px; color: #aaaaaa;">© ${new Date().getFullYear()} YourApp. All rights reserved.</p>
+        </div>
+      </div>
+    `,
+    };
+
+    transporter.sendMail(mailOptions);
+
+    return res.json({
+      message: 'Otp sent succesfully',
+      otp,
+      success: true,
+    });
+  } catch (error) {
+    console.error(error.message);
+    return res.status(500).json({
+      message: 'Server error.',
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+    if (!email || !newPassword || !otp) {
+      return res.json({
+        message: 'All fields are required',
+        success: false,
+      });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.json({
+        message: 'User not found',
+        success: false,
+      });
+    }
+
+    if (otp !== user.resetOtp) {
+      return res.json({
+        message: 'Otp not matched',
+      });
+    }
+
+    if (user.resetOtpExpiresAt < Date.now()) {
+      return res.json({
+        message: 'Otp expired',
+        success: false,
+      });
+    }
+
+    const hashedNewPw = await bcrypt.hash(newPassword, 10);
+    user.password = hashedNewPw;
+    await user.save();
+
+    return res.json({
+      message: 'password reset succesfully',
+      success: true,
+    });
+
+    // const newPassword = await bcrypt.hash(newPassword, 10);
+  } catch (error) {}
+};
+
+module.exports = {
+  registerUser,
+  loginUser,
+  SendverifyOtp,
+  verifyOtp,
+  sendResetOtp,
+  resetPassword,
+};
