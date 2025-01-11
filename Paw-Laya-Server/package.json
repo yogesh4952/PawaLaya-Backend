@@ -1,0 +1,27 @@
+{
+  "name": "paw-laya-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js && npm run sentry:sourcemaps",
+    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org yogesh-dm --project pawalaya ./index.js && sentry-cli sourcemaps upload --org yogesh-dm --project pawalaya ./index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@sentry/cli": "^2.40.0",
+    "@sentry/node": "^8.48.0",
+    "@sentry/profiling-node": "^8.48.0",
+    "bcrypt": "^5.1.1",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-validator": "^7.2.1",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.9.4",
+    "nodemailer": "^6.9.16",
+    "nodemon": "^3.1.9"
+  }
+}
