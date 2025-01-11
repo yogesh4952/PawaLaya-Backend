@@ -1,8 +1,3 @@
-Here is a structured README.md for your project:
-
-markdown
-Copy code
-
 # PawLaya - Pet Adoption System Backend
 
 ## Description
@@ -17,11 +12,10 @@ Clone the project to your local machine:
 
 ```bash
 git clone https://github.com/yogesh4952/PawaLaya-Backend.git
-Install dependencies
+
+### Install dependencies
 Navigate to the project folder and install the required dependencies:
 
-bash
-Copy code
 cd PawLaya-Backend
 npm install
 Set up environment variables

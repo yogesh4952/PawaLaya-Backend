@@ -10,6 +10,9 @@ require('dotenv').config();
 app.use(express.json());
 // app.use('/pawalaya/v1');
 
+const cookie_parser = require('cookie-parser');
+app.use(cookie_parser());
+
 app.get('/', (req, res) => {
   res.send('I am alive');
 });
