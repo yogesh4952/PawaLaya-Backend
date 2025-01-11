@@ -79,18 +79,31 @@ const generateJWTToken = async (user) => {
 
 // For user login
 const loginUser = async (req, res) => {
-  const { email, password } = req.body;
+  const { emailorUsername, password } = req.body;
 
-  if (!email || !password) {
+  const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+
+  // Regex for password validation (e.g., at least 6 characters, including one number and one letter)
+  const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
+
+  if (!emailorUsername || !password) {
     return res.status(400).json({
       message: 'All fields are required.',
     });
   }
 
-  const existingUser = await User.findOne({ email });
+  let existingUser;
+  if (emailRegex.test(emailorUsername)) {
+    // If the input is an email, search for the user by email
+    existingUser = await User.findOne({ email: emailorUsername });
+  } else {
+    // If the input is not an email, assume it's a username and search by username
+    existingUser = await User.findOne({ username: emailorUsername });
+  }
+
   if (!existingUser) {
     return res.status(400).json({
-      message: 'Email is not registered.',
+      message: 'User not found.',
       success: false,
     });
   }
