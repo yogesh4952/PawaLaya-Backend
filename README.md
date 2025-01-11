@@ -1,76 +1,75 @@
-PawLaya Backend
-Overview
-PawLaya is a backend system for a pet adoption platform. It manages user authentication, including registration, login, and token-based sessions.
+Here is a structured README.md for your project:
 
-Technologies Used
-Node.js
-Express.js
-MongoDB (MongoDB Atlas)
-JWT (JSON Web Tokens) for authentication
-bcrypt for password hashing
-Installation
-Clone this repository:
-
-bash
+markdown
 Copy code
+
+# PawLaya - Pet Adoption System Backend
+
+## Description
+
+PawLaya is a pet adoption system that allows users to register, log in, and adopt pets. It features user authentication and a pet adoption process, backed by MongoDB for data storage.
+
+## Installation
+
+### Clone the repository
+
+Clone the project to your local machine:
+
+```bash
 git clone https://github.com/yogesh4952/PawaLaya-Backend.git
-Install dependencies:
+Install dependencies
+Navigate to the project folder and install the required dependencies:
 
 bash
 Copy code
+cd PawLaya-Backend
 npm install
-Set up environment variables in a .env file:
+Set up environment variables
+Create a .env file in the root of the project and add the following variables:
 
-SECRET_STRING (for JWT signing)
-MongoDB URI (if using MongoDB Atlas)
-Run the server:
+makefile
+Copy code
+MONGO_URI=your_mongo_connection_string
+SECRET_STRING=your_jwt_secret_key
+PORT=your_preferred_port
+Technologies Used
+Node.js: Backend runtime environment
+Express.js: Web framework
+MongoDB: NoSQL database
+Mongoose: ODM for MongoDB
+bcrypt: Password hashing
+jsonwebtoken: JWT-based authentication
+Routes
+Auth Routes
+POST /auth/register: Register a new user.
+POST /auth/login: Login a user.
+Folder Structure
+bash
+Copy code
+PawLaya-Backend/
+├── controllers/
+│   └── auth.controller.js
+├── models/
+│   └── user.models.js
+├── routes/
+│   └── auth.routes.js
+├── .env
+├── index.js
+└── package.json
+Usage
+Run the server
+Start the server using:
 
 bash
 Copy code
 npm start
-API Documentation
-User Registration (POST /api/register)
-Request:
+The server will run at http://localhost:8001 by default.
 
-json
-Copy code
-{
-"username": "exampleUser",
-"email": "user@example.com",
-"password": "password123"
-}
-Response:
-
-json
-Copy code
-{
-"message": "User registered successfully",
-"success": true,
-"user": { ...userDetails }
-}
-User Login (POST /api/login)
-Request:
-
-json
-Copy code
-{
-"email": "user@example.com",
-"password": "password123"
-}
-Response:
-
-json
-Copy code
-{
-"message": "Login successful",
-"success": true,
-"token": "JWT_token_here"
-}
-Error Codes
-400: Bad Request (Missing or invalid input)
-401: Unauthorized (Invalid credentials)
-500: Internal Server Error
 License
-MIT License
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-This README provides a basic outline for your project’s structure and usage. Feel free to customize it as per your project's specific needs.
+csharp
+Copy code
+
+You can copy this directly into your `README.md` file for a well-structured documentation.
+```
