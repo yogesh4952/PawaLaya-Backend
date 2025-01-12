@@ -1,32 +1,33 @@
-const express = require('express');
+import express from 'express';
+import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
+import * as Sentry from '@sentry/node'; // Correct import statement
+import connectDB from './DB/db.js';
+import AuthRoutes from './routes/auth.routes.js';
+import './instrument.js'; // Setup Sentry for error handling
 
-//! Setup sentry for error handling
-require('./instrument.js');
-const Sentry = require('@sentry/node');
+dotenv.config();
 
 const app = express();
-require('dotenv').config();
 
 app.use(express.json());
-// app.use('/pawalaya/v1');
+app.use(cookieParser());
 
-const cookie_parser = require('cookie-parser');
-app.use(cookie_parser());
-
+// Basic route
 app.get('/', (req, res) => {
   res.send('I am alive');
 });
 
-//Database call
-const connectDB = require('./DB/db');
+// Database connection
 connectDB();
 
-const AuthRoutes = require('./routes/auth.routes.js');
+// Authentication routes
 app.use('/pawalaya/api/v1/auth', AuthRoutes);
 
+// Setup Sentry error handler
 Sentry.setupExpressErrorHandler(app);
 
-//Express Server connection
+// Express server connection
 const port = process.env.PORT || 8000;
 app.listen(port, () => {
   console.log(`Server running at port ${port}`);

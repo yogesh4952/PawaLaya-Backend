@@ -1,19 +1,19 @@
-// Import with `import * as Sentry from "@sentry/node"` if you are using ESM
-const Sentry = require('@sentry/node');
-const { nodeProfilingIntegration } = require('@sentry/profiling-node');
+import * as Sentry from '@sentry/node'; // Import Sentry
+import { nodeProfilingIntegration } from '@sentry/profiling-node'; // Import profiling integration
 
+// Initialize Sentry with your DSN and integrations
 Sentry.init({
   dsn: 'https://68ab6a10a611e573267effb3d1a49517@o4508603140472832.ingest.de.sentry.io/4508625023205456',
   integrations: [nodeProfilingIntegration()],
-  // Tracing
-  // tracesSampleRate: 1.0, //  Capture 100% of the transactions
+  // Optional: Enable tracing if needed
+  // tracesSampleRate: 1.0, // Capture 100% of the transactions
 });
-// Manually call startProfiler and stopProfiler
-// to profile the code in between
+
+// Start the profiler
 Sentry.profiler.startProfiler();
 
 // Starts a transaction that will also be profiled
-Sentry.startSpan(
+const transaction = Sentry.startSpan(
   {
     name: 'My First Transaction',
   },
@@ -22,6 +22,5 @@ Sentry.startSpan(
   }
 );
 
-// Calls to stopProfiling are optional - if you don't stop the profiler, it will keep profiling
-// your application until the process exits or stopProfiling is called.
+// Optionally stop profiling, but if you don't, it will keep profiling until the process exits
 Sentry.profiler.stopProfiler();

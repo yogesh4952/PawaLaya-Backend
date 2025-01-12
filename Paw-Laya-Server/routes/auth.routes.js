@@ -1,22 +1,21 @@
-const express = require('express');
-const {
+import express from 'express';
+import {
   registerUser,
   loginUser,
-  SendverifyOtp,
+  sendVerifyOtp,
   verifyOtp,
   sendResetOtp,
-  verifyResetOtp,
   resetPassword,
-} = require('../controllers/auth.controller');
-const userAuth = require('../middlewares/UserAuth.middleware');
-const { verify } = require('jsonwebtoken');
+} from '../controllers/auth.controller.js';
+import userAuth from '../middlewares/UserAuth.middleware.js';
+
 const route = express.Router();
 
 route.post('/registerUser', registerUser);
-route.post('/login', userAuth, loginUser);
-route.post('/send-verify-otp', userAuth, SendverifyOtp);
+route.post('/login', loginUser);
+route.post('/send-verify-otp', userAuth, sendVerifyOtp);
 route.post('/verify-otp', userAuth, verifyOtp);
 route.post('/send-reset-otp', userAuth, sendResetOtp);
 route.post('/reset-password', userAuth, resetPassword);
 
-module.exports = route;
+export default route;

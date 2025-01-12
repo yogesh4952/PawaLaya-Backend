@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const UserSchema = new mongoose.Schema(
   {
@@ -13,54 +13,44 @@ const UserSchema = new mongoose.Schema(
       required: [true, 'Password is required'],
       minlength: [6, 'Password must be at least 6 characters long'], // Minimum length of 6
     },
-
     email: {
       type: String,
-      required: [true, 'Username is required'],
+      required: [true, 'Email is required'],
       unique: true,
     },
-
     fullname: {
       type: String,
       required: [true, 'FullName is required'],
     },
-
     address: {
       type: String,
       required: [true, 'Address is required'],
     },
-
     phonenumber: {
       type: Number,
       required: [true, 'Phone Number is required'],
     },
-
     role: {
       type: String,
       enum: ['seller', 'adopter'],
-      required: [true, 'You must specified the role'],
+      required: [true, 'You must specify the role'],
     },
-
     verifyOtp: {
       type: Number,
       default: '',
     },
-
     verifyOtpExpriesAt: {
       type: Number,
       default: 0,
     },
-
     isAccountVerified: {
       type: Boolean,
       default: false,
     },
-
     resetOtp: {
       type: String,
       default: ' ',
     },
-
     resetOtpExpiresAt: {
       type: Number,
       default: 0,
@@ -69,4 +59,4 @@ const UserSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model('User', UserSchema);
+export default mongoose.model('User', UserSchema);

@@ -1,15 +1,13 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
-const connectDB = async (req, res) => {
-  //DB USERNAME = teampawlaya
-  //DB PASSWORD = DM2KzKueFff3JXvu
+const connectDB = async () => {
   try {
     const connectionUri = process.env.DB_URL;
-    mongoose.connect(connectionUri);
-    console.log('DataBase conneceted Succesfully');
+    await mongoose.connect(connectionUri);
+    console.log('Database connected successfully');
   } catch (error) {
-    console.error('Cannot connet with database', error.message);
+    console.error('Cannot connect to the database:', error.message);
   }
 };
 
-module.exports = connectDB;
+export default connectDB;
