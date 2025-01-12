@@ -29,6 +29,14 @@ const registerUser = async (req, res) => {
     });
   }
 
+  //Restrict registration for admin
+  if (role === 'admin') {
+    return res.json({
+      message: 'Invalid role',
+    });
+  }
+
+  //check either user exist or not
   const existingUser = await User.findOne({ $or: [{ email }, { username }] });
   if (existingUser) {
     return res.status(400).json({
@@ -36,6 +44,7 @@ const registerUser = async (req, res) => {
     });
   }
 
+  //hashing the pw for security
   const hashedPw = await bcrypt.hash(password, 10);
   const newUser = new User({
     username,
@@ -63,17 +72,6 @@ const registerUser = async (req, res) => {
     });
   }
 };
-
-// Generate JWT token
-// const generateJWTToken = (user) => {
-//   const payload = {
-//     id: user._id,
-//     username: user.username,
-//     email: user.email,
-//   };
-
-//   return jwt.sign(payload, process.env.SECRET_STRING, { expiresIn: '2h' });
-// };
 
 // For user login
 const loginUser = async (req, res) => {
