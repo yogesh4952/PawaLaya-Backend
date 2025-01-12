@@ -31,27 +31,33 @@ const UserSchema = new mongoose.Schema(
       type: Number,
       required: [true, 'Phone Number is required'],
     },
+
     role: {
       type: String,
-      enum: ['seller', 'adopter'],
-      required: [true, 'You must specify the role'],
+      enum: ['admin', 'user'],
+      default: 'user',
     },
+
     verifyOtp: {
       type: Number,
       default: '',
     },
+
     verifyOtpExpriesAt: {
       type: Number,
       default: 0,
     },
+
     isAccountVerified: {
       type: Boolean,
       default: false,
     },
+
     resetOtp: {
       type: String,
       default: ' ',
     },
+
     resetOtpExpiresAt: {
       type: Number,
       default: 0,

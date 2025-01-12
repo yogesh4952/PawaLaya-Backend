@@ -6,6 +6,7 @@ import User from '../models/user.models.js';
 import generateOtp from '../helper/generateOtp.js';
 import sendEmail from '../helper/sendMail.js';
 import userValidationSchema from '../helper/joi_validation.js';
+import generateJwt from '../helper/generateJwt.js';
 
 dotenv.config();
 
@@ -64,21 +65,21 @@ const registerUser = async (req, res) => {
 };
 
 // Generate JWT token
-const generateJWTToken = (user) => {
-  const payload = {
-    id: user._id,
-    username: user.username,
-    email: user.email,
-  };
+// const generateJWTToken = (user) => {
+//   const payload = {
+//     id: user._id,
+//     username: user.username,
+//     email: user.email,
+//   };
 
-  return jwt.sign(payload, process.env.SECRET_STRING, { expiresIn: '2h' });
-};
+//   return jwt.sign(payload, process.env.SECRET_STRING, { expiresIn: '2h' });
+// };
 
 // For user login
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
-
+    console.log(req.body);
     if (!email || !password) {
       return res.status(400).json({
         message: 'All fields are required.',
@@ -103,12 +104,13 @@ const loginUser = async (req, res) => {
       });
     }
 
-    const token = generateJWTToken(existingUser);
+    const token = generateJwt(existingUser);
 
     res.cookie('authToken', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
     });
+
     return res.status(200).json({
       message: 'Login successful.',
       data: existingUser,

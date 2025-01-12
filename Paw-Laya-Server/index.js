@@ -5,6 +5,8 @@ import * as Sentry from '@sentry/node'; // Correct import statement
 import connectDB from './DB/db.js';
 import AuthRoutes from './routes/auth.routes.js';
 import './instrument.js'; // Setup Sentry for error handling
+import PetRoutes from './routes/pet.routes.js';
+import adminRoutes from './routes/admin.routes.js';
 
 dotenv.config();
 
@@ -22,7 +24,9 @@ app.get('/', (req, res) => {
 connectDB();
 
 // Authentication routes
-app.use('/pawalaya/api/v1/auth', AuthRoutes);
+app.use('/pawlaya/api/v1/auth', AuthRoutes);
+app.use('/pawlaya/api/v1/pets', PetRoutes);
+app.use('/pawlaya/api/v1/admin', adminRoutes);
 
 // Setup Sentry error handler
 Sentry.setupExpressErrorHandler(app);
