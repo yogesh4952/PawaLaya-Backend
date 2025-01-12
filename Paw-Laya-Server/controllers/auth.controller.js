@@ -1,12 +1,11 @@
 import dotenv from 'dotenv';
 import bcrypt from 'bcrypt';
-import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
-import transporter from '../utils/nodemailer.js';
 import User from '../models/user.models.js';
 import generateOtp from '../helper/generateOtp.js';
 import sendEmail from '../helper/sendMail.js';
+import userValidationSchema from '../helper/joi_validation.js';
 
 dotenv.config();
 
@@ -26,13 +25,6 @@ const registerUser = async (req, res) => {
   ) {
     return res.status(400).json({
       message: 'Bad request. Missing required fields.',
-    });
-  }
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    return res.status(400).json({
-      message: 'Invalid email format.',
     });
   }
 
@@ -86,7 +78,6 @@ const generateJWTToken = (user) => {
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log(email, password);
 
     if (!email || !password) {
       return res.status(400).json({
@@ -344,6 +335,54 @@ const resetPassword = async (req, res) => {
   }
 };
 
+const logOut = async (req, res) => {
+  const { email, password, confirmPassword } = req.body;
+
+  if (!email || !password || !confirmPassword) {
+    return res.json({
+      thau: 'Logout',
+      message: 'All fields are required',
+    });
+  }
+
+  if (password !== confirmPassword) {
+    return res.json({
+      message: 'Password and confirmPassword should be same',
+    });
+  }
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.json({
+        message: 'User not found',
+      });
+    }
+
+    const matchPassword = await bcrypt.compare(password, user.password);
+    if (!matchPassword) {
+      return res.json({
+        message: "Password doesn't match",
+      });
+    }
+
+    res.clearCookie('authToken', {
+      httpOnly: true,
+    });
+
+    return res.json({
+      success: true,
+      message: 'User logout succesfully',
+    });
+  } catch (error) {
+    console.error(error);
+    return res.json({
+      success: false,
+      error: error.message,
+      message: 'Cannot logout',
+    });
+  }
+};
+
 export {
   resetPassword,
   sendResetOtp,
@@ -351,4 +390,5 @@ export {
   sendVerifyOtp,
   loginUser,
   registerUser,
+  logOut,
 };
