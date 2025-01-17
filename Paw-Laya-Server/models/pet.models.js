@@ -15,12 +15,6 @@ const PetSchema = new mongoose.Schema(
       ref: 'Category',
     },
 
-    type: {
-      type: String,
-      required: true,
-      enum: ['sell', 'adopt'],
-    },
-
     gender: {
       type: String,
       enum: ['M', 'F'],
@@ -32,8 +26,8 @@ const PetSchema = new mongoose.Schema(
     },
 
     price: {
-      type: Number,
-      default: 0,
+      type: String,
+      default: '0',
     },
 
     isVaccinated: {

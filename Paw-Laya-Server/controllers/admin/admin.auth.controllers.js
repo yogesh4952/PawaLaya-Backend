@@ -1,16 +1,11 @@
-import dotenv from 'dotenv';
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
-import User from '../models/user.models.js';
-import generateOtp from '../helper/generateOtp.js';
-import sendEmail from '../helper/sendMail.js';
-import generateJwt from '../helper/generateJwt.js';
+import Admin from '../../models/admin.model.js';
+import generateJwt from '../../helper/generateJwt.js';
+import generateOtp from '../../helper/generateOtp.js';
+import sendEmail from '../../helper/sendMail.js';
 
-dotenv.config();
-
-// For user registration
-const registerUser = async (req, res) => {
+export const registerAdmin = async (req, res) => {
   const { username, email, password, phonenumber, role, fullname, address } =
     req.body;
 
@@ -29,15 +24,23 @@ const registerUser = async (req, res) => {
   }
 
   //Restrict registration for admin
-  if (role === 'admin') {
+  if (role === 'user') {
     return res.json({
       message: 'Invalid role',
     });
   }
 
+  //restriction to create more admin
+  const count = await Admin.countDocuments();
+  if (count > 1) {
+    return res.json({
+      message: 'Only one admin is allowed',
+    });
+  }
+
   //check either user exist or not
-  const existingUser = await User.findOne({ $or: [{ email }, { username }] });
-  if (existingUser) {
+  const existingAdmin = await Admin.findOne({ $or: [{ email }, { username }] });
+  if (existingAdmin) {
     return res.status(400).json({
       message: 'Username or email already exists.',
     });
@@ -45,7 +48,7 @@ const registerUser = async (req, res) => {
 
   //hashing the pw for security
   const hashedPw = await bcrypt.hash(password, 10);
-  const newUser = new User({
+  const newAdmin = new Admin({
     username,
     email,
     password: hashedPw,
@@ -56,11 +59,11 @@ const registerUser = async (req, res) => {
   });
 
   try {
-    await newUser.save();
+    await newAdmin.save();
     return res.status(201).json({
-      message: 'User registered successfully.',
+      message: 'admin registered successfully.',
       success: true,
-      user: newUser,
+      user: newAdmin,
     });
   } catch (error) {
     console.error(error.message);
@@ -72,37 +75,46 @@ const registerUser = async (req, res) => {
   }
 };
 
-// For user login
-const loginUser = async (req, res) => {
+export const loginAdmin = async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log(req.body);
+
+    //check either it is empty or not
+
     if (!email || !password) {
       return res.status(400).json({
         message: 'All fields are required.',
       });
     }
 
-    const existingUser = await User.findOne({ email });
-    if (!existingUser) {
+    //search for existingAdmin or not
+    const existingAdmin = await Admin.findOne({ email });
+
+    if (!existingAdmin) {
       return res.status(400).json({
-        message: 'User not found.',
+        message: 'Admin not found.',
         success: false,
       });
     }
 
+    //check either password is correct or not
     const isPasswordMatch = await bcrypt.compare(
       password,
-      existingUser.password
+      existingAdmin.password
     );
+
+    //applying condition for password doesn't match
+
     if (!isPasswordMatch) {
       return res.status(400).json({
         message: 'Incorrect password.',
       });
     }
 
-    const token = generateJwt(existingUser);
+    //generating token for establishing session
+    const token = generateJwt(existingAdmin);
 
+    //cookie generating
     res.cookie('authToken', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -110,7 +122,7 @@ const loginUser = async (req, res) => {
 
     return res.status(200).json({
       message: 'Login successful.',
-      data: existingUser,
+      data: existingAdmin,
       token,
       success: true,
     });
@@ -122,20 +134,19 @@ const loginUser = async (req, res) => {
   }
 };
 
-// Send OTP for account verification
-const sendVerifyOtp = async (req, res) => {
+export const sendVerifyOtp = async (req, res) => {
   try {
-    const { id } = req.body;
+    const { userId } = req.body;
 
-    const user = await User.findById(id);
-    if (!user) {
+    const admin = await Admin.findById(userId);
+    if (!admin) {
       return res.json({
         success: false,
         message: 'User doesn’t exist in the database.',
       });
     }
 
-    if (user.isAccountVerified) {
+    if (admin.isAccountVerified) {
       return res.json({
         success: false,
         message: 'Account is already verified.',
@@ -143,13 +154,13 @@ const sendVerifyOtp = async (req, res) => {
     }
 
     const otp = generateOtp();
-    user.verifyOtp = otp;
-    user.verifyOtpExpriesAt = Date.now() + 24 * 60 * 60 * 1000;
+    admin.verifyOtp = otp;
+    admin.verifyOtpExpriesAt = Date.now() + 24 * 60 * 60 * 1000;
 
     try {
-      await user.save();
+      await admin.save();
       await sendEmail(
-        user.email,
+        admin.email,
         'Welcome to Pawalaya',
         `<h1>Your OTP is ${otp}</h1><p>Welcome to PawaLaya!</p>`
       );
@@ -177,7 +188,7 @@ const sendVerifyOtp = async (req, res) => {
 };
 
 // Verify OTP
-const verifyOtp = async (req, res) => {
+export const verifyOtp = async (req, res) => {
   const { otp, userId } = req.body;
 
   if (!mongoose.Types.ObjectId.isValid(userId) || !otp) {
@@ -187,39 +198,39 @@ const verifyOtp = async (req, res) => {
   }
 
   try {
-    const user = await User.findById(userId);
-    if (!user) {
+    const admin = await Admin.findById(userId);
+    if (!admin) {
       return res.json({
         success: false,
         message: 'User not found.',
       });
     }
 
-    if (user.isAccountVerified) {
+    if (admin.isAccountVerified) {
       return res.json({
         success: false,
         message: 'Account is already verified.',
       });
     }
 
-    if (otp !== user.verifyOtp) {
+    if (otp !== admin.verifyOtp) {
       return res.json({
         message: 'OTP doesn’t match.',
         success: false,
       });
     }
 
-    if (user.verifyOtpExpriesAt < Date.now()) {
+    if (admin.verifyOtpExpriesAt < Date.now()) {
       return res.json({
         message: 'OTP is expired.',
       });
     }
 
-    user.verifyOtpExpriesAt = null;
-    user.verifyOtp = '';
-    user.isAccountVerified = true;
+    admin.verifyOtpExpriesAt = null;
+    admin.verifyOtp = '';
+    admin.isAccountVerified = true;
 
-    await user.save();
+    await admin.save();
 
     return res.json({
       message: 'Email verified successfully.',
@@ -235,27 +246,27 @@ const verifyOtp = async (req, res) => {
   }
 };
 
-// Send OTP for password reset
-
-const sendResetOtp = async (req, res) => {
+export const sendResetOtp = async (req, res) => {
   try {
     const { email } = req.body;
-    const user = await User.findOne({ email });
+    console.log(email);
+    const admin = await Admin.findOne({ email });
+    console.log(admin);
 
-    if (!user) {
+    if (!admin) {
       return res.json({
-        message: 'User not found in the database.',
+        message: 'Admin not found in the database.',
       });
     }
 
     const otp = generateOtp();
-    user.resetOtp = otp;
-    user.resetOtpExpiresAt = Date.now() + 15 * 60 * 1000;
+    admin.resetOtp = otp;
+    admin.resetOtpExpiresAt = Date.now() + 15 * 60 * 1000;
 
     try {
-      await user.save();
+      await admin.save();
       await sendEmail(
-        user.email,
+        admin.email,
         'Welcome to Pawalaya',
         `<h1>Your OTP is ${otp}</h1><p>Reset your password!</p>`
       );
@@ -265,6 +276,7 @@ const sendResetOtp = async (req, res) => {
         message: 'Failed to send reset OTP .',
         success: false,
         error: mailError.message,
+        otp,
       });
     }
 
@@ -283,7 +295,7 @@ const sendResetOtp = async (req, res) => {
 };
 
 // Reset password
-const resetPassword = async (req, res) => {
+export const resetPassword = async (req, res) => {
   try {
     const { email, otp, newPassword } = req.body;
 
@@ -294,22 +306,22 @@ const resetPassword = async (req, res) => {
       });
     }
 
-    const user = await User.findOne({ email });
+    const admin = await Admin.findOne({ email });
 
-    if (!user) {
+    if (!admin) {
       return res.json({
         message: 'User not found.',
         success: false,
       });
     }
 
-    if (otp !== user.resetOtp) {
+    if (otp !== admin.resetOtp) {
       return res.json({
         message: 'OTP doesn’t match.',
       });
     }
 
-    if (user.resetOtpExpiresAt < Date.now()) {
+    if (admin.resetOtpExpiresAt < Date.now()) {
       return res.json({
         message: 'OTP expired.',
         success: false,
@@ -317,8 +329,8 @@ const resetPassword = async (req, res) => {
     }
 
     const hashedNewPw = await bcrypt.hash(newPassword, 10);
-    user.password = hashedNewPw;
-    await user.save();
+    admin.password = hashedNewPw;
+    await admin.save();
 
     return res.json({
       message: 'Password reset successfully.',
@@ -334,7 +346,7 @@ const resetPassword = async (req, res) => {
   }
 };
 
-const logOut = async (req, res) => {
+export const logOut = async (req, res) => {
   const { email, password, confirmPassword } = req.body;
 
   if (!email || !password || !confirmPassword) {
@@ -350,14 +362,14 @@ const logOut = async (req, res) => {
     });
   }
   try {
-    const user = await User.findOne({ email });
-    if (!user) {
+    const admin = await Admin.findOne({ email });
+    if (!admin) {
       return res.json({
         message: 'User not found',
       });
     }
 
-    const matchPassword = await bcrypt.compare(password, user.password);
+    const matchPassword = await bcrypt.compare(password, admin.password);
     if (!matchPassword) {
       return res.json({
         message: "Password doesn't match",
@@ -370,7 +382,7 @@ const logOut = async (req, res) => {
 
     return res.json({
       success: true,
-      message: 'User logout succesfully',
+      message: 'Admin logout succesfully',
     });
   } catch (error) {
     console.error(error);
@@ -380,14 +392,4 @@ const logOut = async (req, res) => {
       message: 'Cannot logout',
     });
   }
-};
-
-export {
-  resetPassword,
-  sendResetOtp,
-  verifyOtp,
-  sendVerifyOtp,
-  loginUser,
-  registerUser,
-  logOut,
 };
