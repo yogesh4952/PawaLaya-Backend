@@ -59,17 +59,22 @@ export const getUser = async (req, res) => {
 
 export const getAllUser = async (req, res) => {
   try {
-    const data = await User.find({});
-    if (!data) {
-      return res.json({
-        message: 'No user in the database',
+    const data = await User.find();
+
+    if (data.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'No users found in the database',
       });
     }
-    return res.json({
+
+    return res.status(200).json({
+      success: true,
       data,
     });
   } catch (error) {
-    return res.json({
+    return res.status(500).json({
+      success: false,
       message: 'Internal server error',
       error: error.message,
     });

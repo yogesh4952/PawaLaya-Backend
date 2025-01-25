@@ -2,7 +2,6 @@ import jwt from 'jsonwebtoken';
 
 const authenticateToken = (req, res, next) => {
   const token = req.cookies.authToken; // Get token from cookies
-  console.log(token);
 
   if (!token || typeof token !== 'string') {
     return res.status(401).json({
@@ -14,7 +13,6 @@ const authenticateToken = (req, res, next) => {
   try {
     // Verify and decode the token
     const tokenDecode = jwt.verify(token, process.env.SECRET_STRING);
-
     // If token contains a valid ID, attach user to the request object
     if (tokenDecode.id) {
       req.user = tokenDecode;

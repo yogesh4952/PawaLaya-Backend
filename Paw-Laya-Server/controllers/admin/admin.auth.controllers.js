@@ -14,7 +14,7 @@ export const registerAdmin = async (req, res) => {
     });
   }
 
-  //restriction to create more admin
+  // restriction to create more admin
   const count = await Admin.countDocuments();
   if (count > 1) {
     return res.json({
@@ -297,6 +297,14 @@ export const resetPassword = async (req, res) => {
       });
     }
 
+    const checkPrevPassword = await bcrypt.compare(newPassword, admin.password);
+
+    if (checkPrevPassword) {
+      return res.status(404).json({
+        message: 'Your previous and new password is same!',
+      });
+    }
+
     if (otp !== admin.resetOtp) {
       return res.json({
         message: 'OTP doesn’t match.',
@@ -314,6 +322,11 @@ export const resetPassword = async (req, res) => {
     admin.password = hashedNewPw;
     await admin.save();
 
+    await sendEmail(
+      admin.email,
+      'Pawlaya Team',
+      `<h1>Your password reset succesfully</h1>`
+    );
     return res.json({
       message: 'Password reset successfully.',
       success: true,

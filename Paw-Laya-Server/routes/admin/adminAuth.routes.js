@@ -8,13 +8,14 @@ import {
   sendResetOtp,
   resetPassword,
   logOut,
+  loginAdmin,
 } from '../../controllers/admin/admin.auth.controllers.js';
 import authenticateToken from '../../middlewares/authenticateToken.js';
 
 import express from 'express';
 const route = express.Router();
 //Authentication
-route.post('/login');
+route.post('/login', loginAdmin);
 route.post('/register', registerAdmin);
 route.post('/send-verify-otp', authenticateToken, sendVerifyOtp);
 route.post('/verify-otp', authenticateToken, verifyOtp);

@@ -6,8 +6,6 @@ const userValidationSchema = Joi.object({
   password: Joi.string().min(6).required(),
   phonenumber: Joi.number().min(10).required(),
   fullname: Joi.string().required(),
-  address: Joi.string().required(),
-  role: Joi.string().valid('seller', 'customer').required(),
 });
 
 export default userValidationSchema;

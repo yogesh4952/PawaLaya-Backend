@@ -3,10 +3,15 @@ import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import * as Sentry from '@sentry/node'; // Correct import statement
 import connectDB from './DB/db.js';
-import AuthRoutes from './routes/user/auth.routes.js';
 import './instrument.js'; // Setup Sentry for error handling
-import adminRoutes from './routes/admin/admin.routes.js';
+import adminAuth from './routes/admin/adminAuth.routes.js';
+import adminUserRoutes from './routes/admin/admin.user.routes.js';
 import adminAuthRoutes from './routes/admin/adminAuth.routes.js';
+import adminPetRoutes from './routes/admin/admin.pet.routes.js';
+
+//user
+import userAuth from './routes/user/auth.routes.js';
+import userPetRoutes from './routes/user/user.pet.routes.js';
 
 dotenv.config();
 
@@ -23,11 +28,15 @@ app.get('/', (req, res) => {
 // Database connection
 connectDB();
 
-// Authentication routes
-app.use('/pawlaya/api/v1/auth', AuthRoutes);
-app.use('/pawlaya/api/v1/admin', adminRoutes);
+// Admin routes
+app.use('/pawlaya/api/v1/admin', adminAuth);
+app.use('/pawlaya/api/v1/admin/user', adminUserRoutes);
+app.use('/pawlaya/api/v1/admin/pet', adminPetRoutes);
 app.use('/pawlaya/api/v1/admin/auth', adminAuthRoutes);
 
+//User routes
+app.use('/pawlaya/api/v1', userAuth);
+app.use('/pawlaya/api/v1', userPetRoutes);
 // Setup Sentry error handler
 Sentry.setupExpressErrorHandler(app);
 

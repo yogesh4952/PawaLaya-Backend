@@ -1,7 +1,6 @@
 // Init router
 import express from 'express';
 import authenticateToken from '../../middlewares/authenticateToken.js';
-import { authorizeAdmin } from '../../middlewares/authMidlleWare.js';
 import {
   deleteUser,
   getAllUser,
@@ -11,8 +10,8 @@ import {
 const route = express.Router();
 
 //Users
-route.get('/:id', authenticateToken, authorizeAdmin, getUser);
-route.delete('/:id', authenticateToken, authorizeAdmin, deleteUser);
-route.get('/', authenticateToken, authorizeAdmin, getAllUser);
+route.get('/:id', authenticateToken, getUser);
+route.delete('/:id', authenticateToken, deleteUser);
+route.get('/', authenticateToken, getAllUser);
 
 export default route;

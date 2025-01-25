@@ -107,9 +107,9 @@ const loginUser = async (req, res) => {
 // Send OTP for account verification
 const sendVerifyOtp = async (req, res) => {
   try {
-    const { id } = req.body;
+    const { email } = req.body;
 
-    const user = await User.findById(id);
+    const user = await User.findOne({ email });
     if (!user) {
       return res.json({
         success: false,
@@ -160,16 +160,18 @@ const sendVerifyOtp = async (req, res) => {
 
 // Verify OTP
 const verifyOtp = async (req, res) => {
-  const { otp, userId } = req.body;
+  const token = req.cookies.authToken;
+  const decodeToken = jwt.verify(token, process.env.SECRET_STRING);
+  const { otp } = req.body;
 
-  if (!mongoose.Types.ObjectId.isValid(userId) || !otp) {
+  if (!mongoose.Types.ObjectId.isValid(decodeToken.id) || !otp) {
     return res.json({
       message: 'Invalid input.',
     });
   }
 
   try {
-    const user = await User.findById(userId);
+    const user = await User.findById(decodeToken.id);
     if (!user) {
       return res.json({
         success: false,

@@ -1,16 +1,20 @@
 import {
   createPet,
-  getAllPet,
   getPet,
-} from '../../controllers/pet.controllers.js';
+  getAllPet,
+  deletePet,
+  updatePet,
+} from '../../controllers/admin/admin.pet.controllers.js';
 
 import express from 'express';
 const route = express.Router();
 
 //Authentication
 //Pets
-route.post('/pets/create', createPet);
-route.get('/pets/:id', getPet);
-route.get('/pets', getAllPet);
+route.post('/', createPet);
+route.get('/:id', getPet);
+route.get('/', getAllPet);
+route.delete('/:id', deletePet);
+route.patch('/:id', updatePet);
 
 export default route;
