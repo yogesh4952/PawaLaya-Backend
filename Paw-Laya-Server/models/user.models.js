@@ -23,6 +23,7 @@ const UserSchema = new mongoose.Schema(
       type: String,
       required: [true, 'FullName is required'],
     },
+
     address: {
       type: String,
       required: [true, 'Address is required'],
@@ -30,12 +31,6 @@ const UserSchema = new mongoose.Schema(
     phonenumber: {
       type: Number,
       required: [true, 'Phone Number is required'],
-    },
-
-    role: {
-      type: String,
-      enum: ['admin', 'user'],
-      default: 'user',
     },
 
     verifyOtp: {

@@ -1,7 +1,6 @@
 import Pet from '../models/pet.models.js';
 import Category from '../models/category.model.js';
 
-
 export const createPet = async (req, res) => {
   try {
     let { name, categoryname, type, gender, price, isVaccinated, isAvailable } =
@@ -47,6 +46,7 @@ export const createPet = async (req, res) => {
   }
 };
 
+//todo: Create update and delete for admin
 export const getPet = async (req, res) => {
   const { id } = req.params;
   if (!id) {
@@ -92,4 +92,3 @@ export const getAllPet = async (req, res) => {
     });
   }
 };
-//admin login create

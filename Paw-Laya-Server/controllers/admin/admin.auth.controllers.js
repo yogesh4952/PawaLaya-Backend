@@ -6,27 +6,11 @@ import generateOtp from '../../helper/generateOtp.js';
 import sendEmail from '../../helper/sendMail.js';
 
 export const registerAdmin = async (req, res) => {
-  const { username, email, password, phonenumber, role, fullname, address } =
-    req.body;
+  const { username, email, password, phonenumber, fullname } = req.body;
 
-  if (
-    !username ||
-    !email ||
-    !password ||
-    !phonenumber ||
-    !role ||
-    !fullname ||
-    !address
-  ) {
+  if (!username || !email || !password || !phonenumber || !fullname) {
     return res.status(400).json({
       message: 'Bad request. Missing required fields.',
-    });
-  }
-
-  //Restrict registration for admin
-  if (role === 'user') {
-    return res.json({
-      message: 'Invalid role',
     });
   }
 
@@ -52,10 +36,8 @@ export const registerAdmin = async (req, res) => {
     username,
     email,
     password: hashedPw,
-    address: address.trim(),
     phonenumber,
     fullname: fullname.trim(),
-    role,
   });
 
   try {
