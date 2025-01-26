@@ -2,10 +2,10 @@ import dotenv from 'dotenv';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
-import User from '../models/user.models.js';
-import generateOtp from '../helper/generateOtp.js';
-import sendEmail from '../helper/sendMail.js';
-import generateJwt from '../helper/generateJwt.js';
+import User from '../../models/user.models.js';
+import generateOtp from '../../helper/generateOtp.js';
+import sendEmail from '../../helper/sendMail.js';
+import generateJwt from '../../helper/generateJwt.js';
 
 dotenv.config();
 

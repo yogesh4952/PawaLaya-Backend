@@ -4,48 +4,58 @@ import Admin from '../../models/admin.model.js';
 import generateJwt from '../../helper/generateJwt.js';
 import generateOtp from '../../helper/generateOtp.js';
 import sendEmail from '../../helper/sendMail.js';
+import User from '../../models/user.models.js';
 
 export const registerAdmin = async (req, res) => {
-  const { username, email, password, phonenumber, fullname } = req.body;
-
-  if (!username || !email || !password || !phonenumber || !fullname) {
+  let { username, email, password, phonenumber, fullname, role } = req.body;
+  // Validate required fields
+  if (!username || !email || !password || !phonenumber || !fullname || !role) {
     return res.status(400).json({
       message: 'Bad request. Missing required fields.',
     });
   }
 
-  // restriction to create more admin
-  const count = await Admin.countDocuments();
-  if (count > 1) {
-    return res.json({
-      message: 'Only one admin is allowed',
+  // Only allow 'admin' as the role for admin registration
+  if (role !== 'admin') {
+    return res.status(400).json({
+      message: 'Role must be admin.',
     });
   }
 
-  //check either user exist or not
-  const existingAdmin = await Admin.findOne({ $or: [{ email }, { username }] });
+  // Restriction to create more than one admin
+  const count = await User.countDocuments({ role: 'admin' });
+  if (count > 0) {
+    return res.status(400).json({
+      message: 'Only one admin is allowed.',
+    });
+  }
+
+  // Check if username or email already exists
+  const existingAdmin = await User.findOne({ $or: [{ email }, { username }] });
   if (existingAdmin) {
     return res.status(400).json({
       message: 'Username or email already exists.',
     });
   }
 
-  //hashing the pw for security
+  // Hashing the password for security
   const hashedPw = await bcrypt.hash(password, 10);
-  const newAdmin = new Admin({
+
+  const admin = new User({
     username,
     email,
     password: hashedPw,
     phonenumber,
     fullname: fullname.trim(),
+    role: 'admin', // Assign role as admin directly
   });
 
   try {
-    await newAdmin.save();
+    await admin.save();
     return res.status(201).json({
-      message: 'admin registered successfully.',
+      message: 'Admin registered successfully.',
       success: true,
-      user: newAdmin,
+      user: admin,
     });
   } catch (error) {
     console.error(error.message);
@@ -70,7 +80,7 @@ export const loginAdmin = async (req, res) => {
     }
 
     //search for existingAdmin or not
-    const existingAdmin = await Admin.findOne({ email });
+    const existingAdmin = await User.findOne({ email });
 
     if (!existingAdmin) {
       return res.status(400).json({
@@ -118,9 +128,10 @@ export const loginAdmin = async (req, res) => {
 
 export const sendVerifyOtp = async (req, res) => {
   try {
-    const { userId } = req.body;
+    const { email } = req.body; // Receive user email instead of userId
 
-    const admin = await Admin.findById(userId);
+    // Find the user by email
+    const admin = await User.findOne({ email: email });
     if (!admin) {
       return res.json({
         success: false,
@@ -128,6 +139,7 @@ export const sendVerifyOtp = async (req, res) => {
       });
     }
 
+    // Check if the account is already verified
     if (admin.isAccountVerified) {
       return res.json({
         success: false,
@@ -135,9 +147,10 @@ export const sendVerifyOtp = async (req, res) => {
       });
     }
 
+    // Generate OTP
     const otp = generateOtp();
     admin.verifyOtp = otp;
-    admin.verifyOtpExpriesAt = Date.now() + 24 * 60 * 60 * 1000;
+    admin.verifyOtpExpriesAt = Date.now() + 24 * 60 * 60 * 1000; // OTP expires in 24 hours
 
     try {
       await admin.save();
@@ -149,8 +162,8 @@ export const sendVerifyOtp = async (req, res) => {
     } catch (mailError) {
       console.log(mailError);
       return res.json({
-        messsage: 'Mail error',
-        error: error.message,
+        message: 'Mail error',
+        error: mailError.message,
       });
     }
 
@@ -180,7 +193,7 @@ export const verifyOtp = async (req, res) => {
   }
 
   try {
-    const admin = await Admin.findById(userId);
+    const admin = await User.findById(userId);
     if (!admin) {
       return res.json({
         success: false,
@@ -231,10 +244,8 @@ export const verifyOtp = async (req, res) => {
 export const sendResetOtp = async (req, res) => {
   try {
     const { email } = req.body;
-    console.log(email);
-    const admin = await Admin.findOne({ email });
+    const admin = await User.findOne({ email });
     console.log(admin);
-
     if (!admin) {
       return res.json({
         message: 'Admin not found in the database.',

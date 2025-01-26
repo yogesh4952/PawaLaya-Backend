@@ -38,7 +38,7 @@ const PetSchema = new mongoose.Schema(
 
     isAvailable: {
       type: Boolean,
-      default: true,
+      default: false,
       required: true,
     },
   },

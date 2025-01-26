@@ -5,6 +5,8 @@ const generateJwt = (user) => {
     id: user._id,
     username: user.username,
     email: user.email,
+    role: user.role,
+    iat: Math.floor(Date.now() / 1000), // Current timestamp in seconds
   };
 
   // Check if the SECRET_STRING is present

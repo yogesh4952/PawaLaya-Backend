@@ -7,7 +7,7 @@ import {
   sendResetOtp,
   resetPassword,
   logOut,
-} from '../../controllers/auth.controller.js';
+} from '../../controllers/user/auth.controller.js';
 import authenticateToken from '../../middlewares/authenticateToken.js';
 
 const route = express.Router();

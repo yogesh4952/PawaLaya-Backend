@@ -29,6 +29,12 @@ const UserSchema = new mongoose.Schema(
       required: [true, 'Phone Number is required'],
     },
 
+    role: {
+      type: String,
+      enum: ['user', 'admin'],
+      default: 'User',
+    },
+
     verifyOtp: {
       type: Number,
       default: '',

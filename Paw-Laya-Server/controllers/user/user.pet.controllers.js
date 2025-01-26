@@ -1,4 +1,4 @@
-import Pet from '../models/pet.models.js';
+import Pet from '../../models/pet.models.js';
 
 export const getPet = async (req, res) => {
   const { id } = req.params;
